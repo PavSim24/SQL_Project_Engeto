@@ -1,0 +1,52 @@
+
+-- Ma vyska HDP vliv na zmeny ve mzdach a cenach potravin? Neboli, pokud HDP vzroste vyrazneji v jednom roce, 
+-- projevi se to na cenach potravin ci mzdach ve stejnem nebo nasledujicim roce vyraznejsim rustem?
+
+
+			
+WITH HDP_table AS (
+    SELECT
+        YEAR AS _year,
+        gdp_in_million
+    FROM t_simona_pavelkova_project_sql_secondary_final tsppssf
+    WHERE country = 'Czech Republic'
+    AND year BETWEEN 2005 AND 2018
+),
+payroll_and_food_table AS (
+    SELECT 
+        T1.payroll_year AS _year,
+        ROUND(AVG(T1.average_payroll_per_year), 0) AS avg_payroll_per_year,
+        ROUND(AVG(T1.avg_food_price_for_unit), 2) AS avg_food_price,
+        H1.gdp_in_million
+    FROM t_simona_pavelkova_project_sql_primary_final T1
+    LEFT JOIN HDP_table H1
+    ON T1.payroll_year = H1._year
+    WHERE T1.payroll_year BETWEEN 2005 AND 2018
+    GROUP BY 
+        T1.payroll_year, 
+        H1.gdp_in_million
+),
+percentage_changes AS (
+	SELECT
+		_year,
+		round((gdp_in_million - lag(gdp_in_million) OVER (ORDER BY _year))*100/ lag(gdp_in_million) OVER (ORDER BY _year), 2) AS gdp_percentage_change,
+		round((avg_payroll_per_year - lag(avg_payroll_per_year) OVER (ORDER BY _year))*100/lag(avg_payroll_per_year) OVER (ORDER BY _year), 2) AS payroll_percentage_change,
+		round((avg_food_price - lag(avg_food_price) OVER (ORDER BY _year))* 100/lag(avg_food_price) OVER (ORDER BY _year), 2) AS food_price_percentage_change
+	FROM payroll_and_food_table),
+bigger_percentage_changes AS ( 
+	SELECT
+		_year,
+		gdp_percentage_change,
+		payroll_percentage_change,
+		food_price_percentage_change,
+		CASE WHEN gdp_percentage_change > 3 THEN 1 ELSE 0 END AS bigger_gdp_percentage_growth,
+		CASE WHEN payroll_percentage_change > 3 THEN 1 ELSE 0 END AS bigger_payroll_percentage_change,
+		CASE WHEN food_price_percentage_change > 3 THEN 1 ELSE 0 END AS bigger_food_price_percentage_change
+	FROM percentage_changes)
+SELECT _year,
+		gdp_percentage_change,
+		payroll_percentage_change,
+		food_price_percentage_change
+FROM bigger_percentage_changes
+	WHERE bigger_gdp_percentage_growth =1 
+	AND bigger_payroll_percentage_change =1 OR bigger_food_price_percentage_change = 1;
