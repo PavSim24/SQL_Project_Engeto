@@ -1,0 +1,28 @@
+
+--- Rostou v prubehu let mzdy ve vsech odvetvich, nebo v nekterych klesaji?
+
+
+	WITH filtred_data AS (
+	SELECT 
+			payroll_year,
+			industry_branch_name,
+			average_payroll_per_year
+	FROM t_simona_pavelkova_project_sql_primary_final
+		GROUP BY 
+			payroll_year,
+			industry_branch_name,
+			average_payroll_per_year)
+	SELECT 
+			fd1.payroll_year,
+			fd1.industry_branch_name,
+			fd1.average_payroll_per_year AS avg_payroll_this_year,
+			fd2.average_payroll_per_year AS avg_payroll_last_year,
+			fd1.average_payroll_per_year - fd2.average_payroll_per_year AS avg_payroll_difference,
+			CASE WHEN fd1.average_payroll_per_year - fd2.average_payroll_per_year > 0 THEN "growth"
+				  WHEN fd1.average_payroll_per_year - fd2.average_payroll_per_year = 0 THEN "none"
+				  ELSE "decline" END AS avg_payroll_change
+	FROM filtred_data fd1
+	LEFT JOIN filtred_data fd2
+	ON fd1.industry_branch_name = fd2.industry_branch_name
+			WHERE fd1.payroll_year = fd2.payroll_year+1
+			AND fd1.average_payroll_per_year - fd2.average_payroll_per_year < 0;
