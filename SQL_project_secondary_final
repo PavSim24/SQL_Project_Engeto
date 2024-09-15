@@ -2,16 +2,16 @@
 -- Vytvoreni sekundarni tabulky
 
 CREATE OR REPLACE TABLE t_SIMONA_PAVELKOVA_project_SQL_secondary_final AS 
-    SELECT 
+   	SELECT 
 		    e.country,
 		    e.`year` ,
 		    round (e.GDP/1000000, 0) AS gdp_in_million,
 		    round( e.population/1000, 0) AS population_in_thousand,
 		    gini
-	  FROM economies e
-	  LEFT JOIN countries c 
-	  ON e.country = c.country 
-		    WHERE e.`year`>= (
+	FROM economies e
+	LEFT JOIN countries c 
+	  	ON e.country = c.country 
+	WHERE e.`year`>= (
 			        SELECT 
 			            payroll_year
 			        FROM t_simona_pavelkova_project_sql_primary_final
@@ -19,10 +19,11 @@ CREATE OR REPLACE TABLE t_SIMONA_PAVELKOVA_project_SQL_secondary_final AS
 			        LIMIT 1) 
 		    AND e.`year` <= (
 		         	SELECT
-		 		          payroll_year
-				      FROM t_simona_pavelkova_project_sql_primary_final
-				      ORDER BY payroll_year DESC  
-				      LIMIT 1)
+		 			payroll_year
+				FROM t_simona_pavelkova_project_sql_primary_final
+				ORDER BY payroll_year DESC  
+				LIMIT 1)
 		   AND c.continent = "Europe"
-	     ORDER BY country ASC, 
+	ORDER BY 
+			country ASC, 
 		  	e.`year` ASC;
