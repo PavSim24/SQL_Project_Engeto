@@ -43,7 +43,8 @@ bigger_percentage_changes AS (
 			CASE WHEN payroll_percentage_change > 3 THEN 1 ELSE 0 END AS bigger_payroll_percentage_change,
 			CASE WHEN food_price_percentage_change > 3 THEN 1 ELSE 0 END AS bigger_food_price_percentage_change
 	FROM percentage_changes)
-SELECT _year,
+SELECT 
+			_year,
 			gdp_percentage_change,
 			payroll_percentage_change,
 			food_price_percentage_change
