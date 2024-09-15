@@ -1,34 +1,32 @@
 
 -- Ktera kategorie potravin zdrazuje nejpomaleji (je u ni nejnizsi percentuálni mezirocni narust)?
 
+
 WITH food_table AS ( 
 	SELECT 
-		  food_price_year,
-		  food_category,
-		  avg_food_price_for_unit
-	FROM t_simona_pavelkova_project_sql_primary_final tsppspf 
-	WHERE food_price_year IS NOT NULL 
-	GROUP BY 
-      food_price_year,
+			food_price_year,
 			food_category,
 			avg_food_price_for_unit
+	FROM t_simona_pavelkova_project_sql_primary_final tsppspf 
+	WHERE food_price_year IS NOT NULL 
 	ORDER BY 
-      food_category ASC,  
+			food_category ASC,  
 			food_price_year ASC 
 	 ),
-	 percentage_change AS ( 
-	   SELECT 
-	     	F1.food_price_year,
-	 	    F1.food_category,
-	 	    concat( round((F1.avg_food_price_for_unit-F2.avg_food_price_for_unit)*100/F2.avg_food_price_for_unit, 1), "%" ) AS year_to_year_percentage_change
-	   FROM food_table F1
-	   LEFT JOIN food_table F2
-	   	ON F1.food_category = F2.food_category
-	   	WHERE F1.food_price_year = F2.food_price_year+1
+percentage_change AS ( 
+	 SELECT 
+	 		F1.food_price_year,
+	 		F1.food_category,
+	 		round((F1.avg_food_price_for_unit-F2.avg_food_price_for_unit)*100/F2.avg_food_price_for_unit, 1) AS year_to_year_percentage_change
+	 FROM food_table F1
+	 LEFT JOIN food_table F2
+	 	ON F1.food_category = F2.food_category
+	 WHERE 
+	 		F1.food_price_year = F2.food_price_year+1
 	 	)
-	   	SELECT 
-	 	  	food_category,
-	 		  round( avg(year_to_year_percentage_change),1) AS avg_percentage_change
-	 	  FROM percentage_change
-	   	GROUP BY food_category
-	   	ORDER BY avg_percentage_change ASC;
+SELECT 
+	 		food_category,
+	 		round(avg(year_to_year_percentage_change),1) AS avg_percentage_change
+FROM percentage_change
+GROUP BY food_category
+ORDER BY avg_percentage_change ASC;
