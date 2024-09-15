@@ -3,23 +3,23 @@
 		 
 		
 WITH prepared_data AS (
-		SELECT 
+	SELECT 
 		    payroll_year AS this_year,
 		    round( avg(average_payroll_per_year), 0) AS  avg_payroll_per_year,
 		    round(avg(avg_food_price_for_unit), 2) AS avg_food_price 
-    FROM t_simona_pavelkova_project_sql_primary_final tsppspf 
-		WHERE payroll_year BETWEEN 2006 AND 2018
-		GROUP BY 
+    	FROM t_simona_pavelkova_project_sql_primary_final tsppspf 
+	WHERE payroll_year BETWEEN 2006 AND 2018
+	GROUP BY 
 			payroll_year
-			),		
+),		
 prepared_data_cont as( 
-		SELECT
+	SELECT
 		    this_year,
 		    avg_payroll_per_year,
 		    lag(avg_payroll_per_year) OVER (ORDER BY this_year) AS prev_average_payroll, 
 		    avg_food_price,
 		    lag(avg_food_price) OVER (ORDER BY this_year) AS prev_average_food_price
-		FROM prepared_data),
+	FROM prepared_data),
 percentage_change as(
 	SELECT
 		  this_year,
